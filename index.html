@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ObraPro — Gestión de Obras</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3b82f6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ObraPro">
+<meta name="description" content="Gestión personal de obras de ingeniería y construcción">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b27;
+    --bg3: #1e2535;
+    --bg4: #252d40;
+    --border: #2a3450;
+    --border2: #3a4870;
+    --accent: #3b82f6;
+    --accent2: #1d4ed8;
+    --accent3: #60a5fa;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --sidebar: 220px;
+    --radius: 8px;
+    --font: 'IBM Plex Mono', 'Courier New', monospace;
+    --font2: 'Inter', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font2);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* ===================== SIDEBAR ===================== */
+  .sidebar {
+    width: var(--sidebar);
+    min-width: var(--sidebar);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font); font-weight: 600; font-size: 13px; color: #fff;
+    flex-shrink: 0;
+  }
+
+  .logo-text { font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.05em; }
+  .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .search-box { margin: 12px; position: relative; }
+  .search-box input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px 8px 32px;
+    color: var(--text); font-size: 12px; outline: none;
+    transition: border-color 0.2s;
+    font-family: var(--font2);
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--text3); }
+  .search-box .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+
+  .nav-section { padding: 8px 8px 4px; }
+  .nav-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; padding: 4px 8px 6px; font-family: var(--font); }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 6px; cursor: pointer;
+    color: var(--text2); font-size: 13px; transition: all 0.15s;
+    margin-bottom: 1px; position: relative; user-select: none;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(59,130,246,0.15); color: var(--accent3); }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 2px; background: var(--accent); border-radius: 0 2px 2px 0;
+  }
+  .nav-item i { font-size: 17px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--accent); color: #fff;
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-family: var(--font);
+  }
+  .nav-badge.amber { background: var(--amber); color: #000; }
+  .nav-badge.red { background: var(--red); }
+
+  .sidebar-footer { margin-top: auto; padding: 12px; border-top: 1px solid var(--border); }
+  .user-card {
+    display: flex; align-items: center; gap: 10px; padding: 8px 6px;
+    border-radius: 6px; cursor: pointer;
+  }
+  .user-card:hover { background: var(--bg3); }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+  }
+  .user-name { font-size: 12px; font-weight: 500; }
+  .user-role { font-size: 10px; color: var(--text3); }
+
+  /* ===================== MAIN ===================== */
+  .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
+
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 0 16px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; gap: 8px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-title { font-family: var(--font); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .topbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+  .hamburger {
+    display: none; background: none; border: 1px solid var(--border);
+    color: var(--text2); padding: 7px 9px; border-radius: 6px; cursor: pointer;
+    font-size: 18px; line-height: 1;
+  }
+
+  .btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text2); padding: 7px 12px; border-radius: 6px;
+    font-size: 12px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px; font-family: var(--font2);
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--border2); color: var(--text); background: var(--bg4); }
+  .btn.primary { background: var(--accent); border-color: var(--accent2); color: #fff; }
+  .btn.primary:hover { background: var(--accent2); }
+  .btn.danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+  .content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  /* ===================== VIEWS ===================== */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===================== STAT CARDS ===================== */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font); margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 600; font-family: var(--font); line-height: 1; margin-bottom: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* ===================== SECTION HEADER ===================== */
+  .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .sec-title { font-family: var(--font); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+  .sec-title::before { content: '//'; color: var(--accent3); }
+
+  /* ===================== OBRA CARDS ===================== */
+  .obras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .obra-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .obra-card:hover { border-color: var(--border2); transform: translateY(-1px); background: var(--bg3); }
+  .obra-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .obra-card.ejecucion::before { background: var(--accent); }
+  .obra-card.pendiente::before { background: var(--amber); }
+  .obra-card.finalizada::before { background: var(--green); }
+
+  .obra-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .obra-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .obra-client { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; }
+
+  .badge { font-size: 9px; padding: 3px 8px; border-radius: 4px; font-family: var(--font); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; white-space: nowrap; }
+  .badge.ejecucion { background: rgba(59,130,246,0.15); color: var(--accent3); border: 1px solid rgba(59,130,246,0.3); }
+  .badge.pendiente { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge.finalizada { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge.alta { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge.media { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge.baja { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+
+  .progress-bar { background: var(--bg4); border-radius: 2px; height: 4px; margin: 10px 0 6px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .progress-fill.ejecucion { background: var(--accent); }
+  .progress-fill.pendiente { background: var(--amber); }
+  .progress-fill.finalizada { background: var(--green); }
+
+  .obra-footer { display: flex; justify-content: space-between; align-items: center; }
+  .obra-pct { font-family: var(--font); font-size: 11px; color: var(--text2); }
+  .obra-date { font-size: 10px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
+
+  /* ===================== TASKS ===================== */
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+  .task-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 11px 14px;
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .task-item:hover { border-color: var(--border2); background: var(--bg3); }
+
+  .task-check {
+    width: 16px; height: 16px; border: 1px solid var(--border2);
+    border-radius: 4px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .task-check.done { background: var(--green); border-color: var(--green); }
+  .task-title { font-size: 13px; flex: 1; line-height: 1.3; }
+  .task-title.done { text-decoration: line-through; color: var(--text3); }
+  .prio { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .prio.alta { background: var(--red); }
+  .prio.media { background: var(--amber); }
+  .prio.baja { background: var(--green); }
+  .task-meta { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+  /* ===================== TABLE ===================== */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; }
+  .data-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+  .data-table th {
+    text-align: left; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text3); padding: 10px 14px;
+    border-bottom: 1px solid var(--border); font-family: var(--font); font-weight: 500;
+    background: var(--bg3); white-space: nowrap;
+  }
+  .data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg3); }
+
+  /* ===================== FORM MODAL ===================== */
+  .form-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 1000;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .form-overlay.open { display: flex; }
+  .form-panel {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 24px; width: 480px; max-width: 100%;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .form-panel::-webkit-scrollbar { width: 3px; }
+  .form-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+  .form-title { font-family: var(--font); font-size: 14px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .form-title i { color: var(--accent); font-size: 18px; }
+  .form-row { margin-bottom: 14px; }
+  .form-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: block; font-family: var(--font); }
+  .form-input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 9px 12px; color: var(--text); font-size: 13px;
+    outline: none; transition: border-color 0.2s; font-family: var(--font2);
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text3); }
+  select.form-input option { background: var(--bg3); color: var(--text); }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+  .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+
+  /* ===================== DETAIL PANEL ===================== */
+  .detail-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 999; justify-content: flex-end;
+  }
+  .detail-overlay.open { display: flex; }
+  .detail-panel {
+    background: var(--bg2); border-left: 1px solid var(--border2);
+    width: 460px; max-width: 100%; height: 100vh; overflow-y: auto; padding: 20px;
+  }
+  .detail-panel::-webkit-scrollbar { width: 3px; }
+  .detail-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  /* ===================== DETAIL FIELDS ===================== */
+  .detail-field { margin-bottom: 14px; }
+  .detail-field-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font); margin-bottom: 3px; }
+  .detail-field-value { font-size: 13px; color: var(--text); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; background: var(--bg4); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--text2); }
+
+  /* ===================== TABS ===================== */
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .tab { padding: 9px 14px; font-size: 12px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; user-select: none; }
+  .tab.active { color: var(--accent3); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text2); }
+
+  /* ===================== FILTERS ===================== */
+  .filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 12px; border-radius: 20px; font-size: 11px;
+    border: 1px solid var(--border); background: var(--bg3); color: var(--text3);
+    cursor: pointer; transition: all 0.15s; font-family: var(--font);
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent3); background: rgba(59,130,246,0.1); }
+
+  /* ===================== DASH GRID ===================== */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .widget { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+
+  /* ===================== CALENDAR ===================== */
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-day-header { text-align: center; font-size: 10px; color: var(--text3); padding: 6px 0; font-family: var(--font); text-transform: uppercase; }
+  .cal-day {
+    aspect-ratio: 1; background: var(--bg3); border-radius: 5px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer;
+    transition: all 0.15s; border: 1px solid transparent; font-size: 12px; color: var(--text2);
+  }
+  .cal-day:hover { border-color: var(--border2); background: var(--bg4); }
+  .cal-day.today { border-color: var(--accent); color: var(--accent3); font-weight: 600; }
+  .cal-day.has-event { position: relative; }
+  .cal-day.has-event::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--amber); position: absolute; bottom: 3px; }
+  .cal-day.empty { background: transparent; border: none; cursor: default; }
+
+  /* ===================== GALLERY ===================== */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .gallery-item {
+    aspect-ratio: 4/3; border-radius: var(--radius); overflow: hidden;
+    background: var(--bg3); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; position: relative; flex-direction: column;
+  }
+  .gallery-item:hover { border-color: var(--border2); transform: scale(1.02); }
+  .gallery-placeholder { text-align: center; color: var(--text3); font-size: 11px; }
+  .gallery-placeholder i { font-size: 28px; display: block; margin-bottom: 4px; }
+
+  /* ===================== DOCS ===================== */
+  .upload-zone {
+    border: 2px dashed var(--border2); border-radius: var(--radius);
+    padding: 28px; text-align: center; color: var(--text3); cursor: pointer;
+    transition: all 0.15s; margin-bottom: 12px;
+  }
+  .upload-zone:hover { border-color: var(--accent3); color: var(--text2); background: rgba(59,130,246,0.05); }
+  .upload-zone i { font-size: 32px; display: block; margin-bottom: 8px; }
+  .doc-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .doc-item:hover { border-color: var(--border2); }
+  .doc-icon { width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .doc-icon.pdf { background: rgba(239,68,68,0.15); color: #f87171; }
+  .doc-icon.dwg { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .doc-icon.img { background: rgba(16,185,129,0.15); color: #34d399; }
+  .doc-name { font-size: 13px; font-weight: 500; }
+  .doc-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ===================== MAT ===================== */
+  .mat-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .mat-item:last-child { border-bottom: none; }
+  .mat-icon { width: 32px; height: 32px; background: var(--bg4); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 16px; flex-shrink: 0; }
+
+  /* ===================== SIDEBAR MOBILE OVERLAY ===================== */
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
+  .sidebar-overlay.open { display: block; }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      transform: translateX(-100%);
+      z-index: 100;
+      height: 100vh;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .hamburger { display: flex; align-items: center; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+    .obras-grid { grid-template-columns: 1fr; }
+    .form-grid2 { grid-template-columns: 1fr; }
+    .topbar-actions .btn-text { display: none; }
+    .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .content { padding: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-value { font-size: 22px; }
+    .detail-panel { width: 100%; }
+  }
+
+  /* ===================== NOTIFICATIONS ===================== */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+    background: var(--bg3); border: 1px solid var(--green);
+    border-radius: var(--radius); padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text);
+    animation: slideIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* ===================== EMPTY STATE ===================== */
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
+  .empty-state i { font-size: 48px; display: block; margin-bottom: 12px; color: var(--border2); }
+  .empty-state p { font-size: 13px; margin-bottom: 16px; }
+
+  /* ===================== AVANCE EDITOR ===================== */
+  .avance-slider { width: 100%; accent-color: var(--accent); }
+
+  /* ===================== SEARCH RESULTS ===================== */
+  .search-results {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 300;
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px;
+    margin-top: 4px; overflow: hidden; display: none;
+  }
+  .search-results.open { display: block; }
+  .search-result-item {
+    padding: 10px 12px; font-size: 12px; cursor: pointer; transition: background 0.1s;
+    display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--bg4); }
+  .search-box { position: relative; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar mobile overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">OP</div>
+    <div>
+      <div class="logo-text">ObraPro</div>
+      <div class="logo-sub">Gestión de obras</div>
+    </div>
+  </div>
+
+  <div class="search-box" style="margin:12px;position:relative">
+    <i class="ti ti-search search-icon"></i>
+    <input type="text" placeholder="Buscar obras, clientes..." id="globalSearch" oninput="handleSearch(this.value)" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="nav('dashboard', this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="nav-item" onclick="nav('obras', this)"><i class="ti ti-building-skyscraper"></i> Obras <span class="nav-badge" id="badge-obras">0</span></div>
+    <div class="nav-item" onclick="nav('clientes', this)"><i class="ti ti-users"></i> Clientes</div>
+    <div class="nav-item" onclick="nav('tareas', this)"><i class="ti ti-check-square"></i> Tareas <span class="nav-badge amber" id="badge-tareas">0</span></div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Recursos</div>
+    <div class="nav-item" onclick="nav('materiales', this)"><i class="ti ti-package"></i> Materiales</div>
+    <div class="nav-item" onclick="nav('documentos', this)"><i class="ti ti-files"></i> Documentos</div>
+    <div class="nav-item" onclick="nav('fotos', this)"><i class="ti ti-photo"></i> Fotos de avance</div>
+    <div class="nav-item" onclick="nav('calendario', this)"><i class="ti ti-calendar"></i> Calendario <span class="nav-badge red">2</span></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card" onclick="openForm('perfil')">
+      <div class="avatar" id="avatarInicial">JM</div>
+      <div>
+        <div class="user-name" id="userName">Juan Méndez</div>
+        <div class="user-role">Ing. Constructor</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+      <div class="topbar-title" id="topbarTitle"><i class="ti ti-layout-dashboard" style="color:var(--accent3)"></i> Dashboard</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="openForm('obra')"><i class="ti ti-plus"></i> <span class="btn-text">Nueva obra</span></button>
+      <button class="btn primary" onclick="openForm('tarea')"><i class="ti ti-plus"></i> <span class="btn-text">Tarea</span></button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="sec-header">
+        <div class="sec-title">obras activas</div>
+        <button class="btn" onclick="nav('obras', document.querySelectorAll('.nav-item')[1])">Ver todas <i class="ti ti-arrow-right"></i></button>
+      </div>
+      <div class="obras-grid" id="dash-obras"></div>
+      <div class="dash-grid">
+        <div class="widget">
+          <div class="sec-title" style="margin-bottom:12px">próximas tareas</div>
+          <div class="task-list" id="dash-tareas"></div>
+        </div>
+        <div class="widget">
+          <div class="sec-title" style="margin-bottom:12px">recordatorios</div>
+          <div id="dash-recordatorios"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBRAS -->
+    <div class="view" id="view-obras">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="filters" style="margin:0">
+          <button class="filter-btn active" onclick="filterObras('todas',this)">Todas</button>
+          <button class="filter-btn" onclick="filterObras('ejecucion',this)">En ejecución</button>
+          <button class="filter-btn" onclick="filterObras('pendiente',this)">Pendientes</button>
+          <button class="filter-btn" onclick="filterObras('finalizada',this)">Finalizadas</button>
+        </div>
+        <button class="btn primary" onclick="openForm('obra')"><i class="ti ti-plus"></i> Nueva obra</button>
+      </div>
+      <div class="obras-grid" id="obras-list"></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="view" id="view-clientes">
+      <div style="margin-bottom:12px;display:flex;justify-content:flex-end">
+        <button class="btn primary" onclick="openForm('cliente')"><i class="ti ti-user-plus"></i> Nuevo cliente</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Cliente</th><th>Teléfono</th><th>Email</th><th>Obras</th><th></th></tr></thead>
+          <tbody id="clientes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAREAS -->
+    <div class="view" id="view-tareas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="filters" style="margin:0">
+          <button class="filter-btn active" onclick="filterTareas('todas',this)">Todas</button>
+          <button class="filter-btn" onclick="filterTareas('alta',this)">Alta prioridad</button>
+          <button class="filter-btn" onclick="filterTareas('pendiente',this)">Pendientes</button>
+          <button class="filter-btn" onclick="filterTareas('completada',this)">Completadas</button>
+        </div>
+        <button class="btn primary" onclick="openForm('tarea')"><i class="ti ti-plus"></i> Nueva tarea</button>
+      </div>
+      <div class="task-list" id="tareas-list"></div>
+    </div>
+
+    <!-- MATERIALES -->
+    <div class="view" id="view-materiales">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="filters" style="margin:0">
+          <button class="filter-btn active" onclick="filterMateriales('todas',this)">Todas las obras</button>
+        </div>
+        <button class="btn primary" onclick="openForm('material')"><i class="ti ti-plus"></i> Registrar material</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Material</th><th>Cantidad</th><th>Unidad</th><th>Obra</th><th>Observaciones</th><th></th></tr></thead>
+          <tbody id="materiales-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="view" id="view-documentos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="filters" style="margin:0">
+          <button class="filter-btn active">Todos</button>
+          <button class="filter-btn">PDFs</button>
+          <button class="filter-btn">Planos DWG</button>
+        </div>
+        <label class="btn primary" style="cursor:pointer">
+          <i class="ti ti-upload"></i> Subir archivo
+          <input type="file" style="display:none" accept=".pdf,.dwg,.jpg,.png,.jpeg" onchange="subirArchivo(this)">
+        </label>
+      </div>
+      <div class="upload-zone" onclick="document.querySelector('input[type=file]').click()">
+        <i class="ti ti-cloud-upload"></i>
+        <div style="font-size:13px;margin-bottom:4px;font-weight:500">Arrastrar archivos aquí o hacer clic</div>
+        <div style="font-size:11px">Soporta: PDF, DWG, JPG, PNG</div>
+      </div>
+      <div id="docs-list"></div>
+    </div>
+
+    <!-- FOTOS -->
+    <div class="view" id="view-fotos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="filters" style="margin:0">
+          <button class="filter-btn active">Todas las obras</button>
+        </div>
+        <label class="btn primary" style="cursor:pointer">
+          <i class="ti ti-camera"></i> Subir fotos
+          <input type="file" style="display:none" accept="image/*" multiple onchange="subirFotos(this)">
+        </label>
+      </div>
+      <div class="gallery-grid" id="fotos-grid"></div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="view" id="view-calendario">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn" onclick="cambiarMes(-1)"><i class="ti ti-chevron-left"></i></button>
+          <div style="font-family:var(--font);font-size:13px;padding:7px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;min-width:130px;text-align:center" id="cal-mes-label"></div>
+          <button class="btn" onclick="cambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <button class="btn primary" onclick="openForm('evento')"><i class="ti ti-plus"></i> Nuevo evento</button>
+      </div>
+      <div class="widget" style="padding:16px;margin-bottom:16px">
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="sec-title" style="margin-bottom:12px">eventos del mes</div>
+      <div class="task-list" id="eventos-list"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- FORM MODAL -->
+<div class="form-overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
+  <div class="form-panel">
+    <div id="formContent"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeForm()"><i class="ti ti-x"></i> Cancelar</button>
+      <button class="btn primary" id="formSaveBtn" onclick="saveForm()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailContent"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA — se guarda en localStorage automáticamente
+// ============================================================
+const defaultData = {
+  obras: [
+    { id:1, nombre:'Residencia García', cliente:'Familia García', direccion:'Av. Colón 1234, Córdoba', inicio:'2025-01-15', estado:'ejecucion', avance:72, notas:'Etapa de terminaciones. Pendiente colocación de carpintería.' },
+    { id:2, nombre:'Centro Comercial Norte', cliente:'Inversiones SA', direccion:'Bv. Chacabuco 890, Córdoba', inicio:'2024-11-01', estado:'ejecucion', avance:45, notas:'Estructura de hormigón completa. Iniciando cerramientos.' },
+    { id:3, nombre:'Galpón Industrial Ruta 9', cliente:'Logística Express', direccion:'Ruta 9 km 12, Córdoba', inicio:'2025-03-01', estado:'pendiente', avance:10, notas:'En espera de aprobación municipal.' },
+    { id:4, nombre:'Oficinas Corporativas', cliente:'TechCorp SRL', direccion:'Av. Vélez Sársfield 450, Córdoba', inicio:'2024-06-01', estado:'finalizada', avance:100, notas:'Entregada. En período de garantía.' },
+  ],
+  clientes: [
+    { id:1, nombre:'Familia García', tel:'+54 351 400-1234', email:'garcia@gmail.com', direccion:'Av. Colón 1234', notas:'Cliente frecuente. Obras premium.' },
+    { id:2, nombre:'Inversiones SA', tel:'+54 351 411-5678', email:'info@inversiones.com', direccion:'Bv. San Juan 560', notas:'Empresa constructora.' },
+    { id:3, nombre:'Logística Express', tel:'+54 351 422-9012', email:'obras@logex.com', direccion:'Ruta 9 km 5', notas:'' },
+    { id:4, nombre:'TechCorp SRL', tel:'+54 351 433-3456', email:'proyectos@techcorp.com', direccion:'Av. Vélez Sársfield 450', notas:'Proyecto terminado.' },
+  ],
+  tareas: [
+    { id:1, titulo:'Inspeccionar cimientos bloque B', obraId:2, prioridad:'alta', vencimiento:'2025-05-12', estado:'pendiente', descripcion:'Revisar fisuras y nivel.' },
+    { id:2, titulo:'Pedir cotización carpintería', obraId:1, prioridad:'media', vencimiento:'2025-05-14', estado:'pendiente', descripcion:'' },
+    { id:3, titulo:'Reunión con arquitecto García', obraId:1, prioridad:'alta', vencimiento:'2025-05-10', estado:'completada', descripcion:'' },
+    { id:4, titulo:'Verificar entregas de hierro', obraId:2, prioridad:'alta', vencimiento:'2025-05-15', estado:'pendiente', descripcion:'' },
+    { id:5, titulo:'Actualizar planos ruta 9', obraId:3, prioridad:'baja', vencimiento:'2025-05-20', estado:'pendiente', descripcion:'' },
+    { id:6, titulo:'Liquidar factura hormigón', obraId:2, prioridad:'media', vencimiento:'2025-05-08', estado:'pendiente', descripcion:'' },
+    { id:7, titulo:'Fotografiar avance semana', obraId:1, prioridad:'baja', vencimiento:'2025-05-16', estado:'pendiente', descripcion:'' },
+    { id:8, titulo:'Trámite municipal habilitación', obraId:3, prioridad:'alta', vencimiento:'2025-05-09', estado:'pendiente', descripcion:'' },
+  ],
+  materiales: [
+    { id:1, nombre:'Hierro 12mm', cantidad:500, unidad:'kg', obraId:2, obs:'Stock disponible' },
+    { id:2, nombre:'Cemento Portland', cantidad:120, unidad:'bolsas', obraId:1, obs:'Reponer en 3 días' },
+    { id:3, nombre:'Arena gruesa', cantidad:8, unidad:'m³', obraId:2, obs:'' },
+    { id:4, nombre:'Ladrillos huecos', cantidad:3000, unidad:'unid.', obraId:1, obs:'Pedido confirmado' },
+    { id:5, nombre:'Membranas asfálticas', cantidad:40, unidad:'rollos', obraId:3, obs:'Por cotizar' },
+  ],
+  documentos: [
+    { id:1, nombre:'Plano general planta baja.dwg', tipo:'dwg', tamaño:'2.4 MB', obraId:1, fecha:'2025-05-08' },
+    { id:2, nombre:'Memoria descriptiva.pdf', tipo:'pdf', tamaño:'540 KB', obraId:2, fecha:'2025-05-05' },
+    { id:3, nombre:'Certificado municipal.pdf', tipo:'pdf', tamaño:'210 KB', obraId:1, fecha:'2025-04-28' },
+  ],
+  fotos: [
+    { id:1, nombre:'Avance frente.jpg', obraId:1, fecha:'2025-05-10', color:'#1e3a5f' },
+    { id:2, nombre:'Estructura nivel 2.jpg', obraId:2, fecha:'2025-05-09', color:'#1a3a2f' },
+    { id:3, nombre:'Terminaciones interior.jpg', obraId:1, fecha:'2025-05-08', color:'#3a1e1e' },
+    { id:4, nombre:'Galpón cimiento.jpg', obraId:3, fecha:'2025-05-07', color:'#2a1e3a' },
+    { id:5, nombre:'Vista aérea obra.jpg', obraId:2, fecha:'2025-05-06', color:'#1e2f3a' },
+  ],
+  eventos: [
+    { id:1, titulo:'Entrega planos actualizados', tipo:'Documento', fecha:'2025-05-08', color:'var(--purple)' },
+    { id:2, titulo:'Inspección DPAC — Galpón Ruta 9', tipo:'Inspección', fecha:'2025-05-10', color:'var(--red)' },
+    { id:3, titulo:'Reunión con Inversiones SA', tipo:'Reunión', fecha:'2025-05-14', color:'var(--accent)' },
+    { id:4, titulo:'Entrega hierros — proveedor', tipo:'Entrega', fecha:'2025-05-15', color:'var(--amber)' },
+    { id:5, titulo:'Medición certificado de avance', tipo:'Certificado', fecha:'2025-05-20', color:'var(--green)' },
+  ],
+  nextId: { obras:5, clientes:5, tareas:9, materiales:6, documentos:4, fotos:6, eventos:6 }
+};
+
+// Cargar o inicializar datos desde localStorage
+function loadData() {
+  const saved = localStorage.getItem('obraproData');
+  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultData));
+}
+function saveData() {
+  localStorage.setItem('obraproData', JSON.stringify(db));
+}
+let db = loadData();
+
+let currentForm = null;
+let calYear = 2025, calMonth = 4; // 0-indexed (4 = mayo)
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const viewTitles = {
+  dashboard: ['ti-layout-dashboard','Dashboard'],
+  obras: ['ti-building-skyscraper','Obras'],
+  clientes: ['ti-users','Clientes'],
+  tareas: ['ti-check-square','Tareas'],
+  materiales: ['ti-package','Materiales'],
+  documentos: ['ti-files','Documentos'],
+  fotos: ['ti-photo','Fotos de avance'],
+  calendario: ['ti-calendar','Calendario']
+};
+
+function nav(view, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  if(el) el.classList.add('active');
+  const [icon, title] = viewTitles[view] || ['ti-home',''];
+  document.getElementById('topbarTitle').innerHTML = `<i class="ti ${icon}" style="color:var(--accent3)"></i> ${title}`;
+  renderView(view);
+  if(window.innerWidth < 768) closeSidebar();
+}
+
+function renderView(view) {
+  if(view==='dashboard') renderDashboard();
+  else if(view==='obras') renderObras();
+  else if(view==='clientes') renderClientes();
+  else if(view==='tareas') renderTareas();
+  else if(view==='materiales') renderMateriales();
+  else if(view==='documentos') renderDocumentos();
+  else if(view==='fotos') renderFotos();
+  else if(view==='calendario') renderCalendario();
+}
+
+// ============================================================
+// SIDEBAR MOBILE
+// ============================================================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function obraNombre(id) {
+  const o = db.obras.find(x=>x.id===id);
+  return o ? o.nombre : '—';
+}
+function estadoClass(e) {
+  return e==='ejecucion'?'ejecucion':e==='pendiente'?'pendiente':'finalizada';
+}
+function estadoLabel(e) {
+  return e==='ejecucion'?'En ejecución':e==='pendiente'?'Pendiente':'Finalizada';
+}
+function fechaFmt(f) {
+  if(!f) return '—';
+  const [y,m,d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+function initials(nombre) {
+  return nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const activas = db.obras.filter(o=>o.estado==='ejecucion').length;
+  const pendTareas = db.tareas.filter(t=>t.estado==='pendiente').length;
+  const avgs = db.obras.length ? Math.round(db.obras.reduce((a,o)=>a+o.avance,0)/db.obras.length) : 0;
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Obras activas</div><div class="stat-value" style="color:var(--accent3)">${activas}</div><div class="stat-sub">de ${db.obras.length} total</div></div>
+    <div class="stat-card"><div class="stat-label">Tareas pendientes</div><div class="stat-value" style="color:var(--amber)">${pendTareas}</div><div class="stat-sub">de ${db.tareas.length} total</div></div>
+    <div class="stat-card"><div class="stat-label">Clientes</div><div class="stat-value" style="color:var(--green)">${db.clientes.length}</div><div class="stat-sub">registrados</div></div>
+    <div class="stat-card"><div class="stat-label">Avance promedio</div><div class="stat-value" style="color:var(--purple)">${avgs}%</div><div class="stat-sub">todas las obras</div></div>
+  `;
+
+  const obrasFiltradas = db.obras.filter(o=>o.estado!=='finalizada');
+  document.getElementById('dash-obras').innerHTML = obrasFiltradas.length
+    ? obrasFiltradas.map(o=>obraCard(o)).join('')
+    : '<div class="empty-state"><i class="ti ti-building-skyscraper"></i><p>Sin obras activas</p></div>';
+
+  const prox = db.tareas.filter(t=>t.estado==='pendiente').slice(0,4);
+  document.getElementById('dash-tareas').innerHTML = prox.length
+    ? prox.map(t=>taskItem(t,false)).join('')
+    : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Sin tareas pendientes</div>';
+
+  document.getElementById('dash-recordatorios').innerHTML = generarRecordatorios();
+  updateBadges();
+}
+
+function generarRecordatorios() {
+  const items = [
+    { icon:'ti-alert-triangle', color:'var(--red)', txt:'Vencimiento permiso — Galpón Industrial', date:'En 2 días' },
+    { icon:'ti-calendar-event', color:'var(--amber)', txt:'Reunión arquitecto García — 14:00hs', date:'Mañana' },
+    { icon:'ti-truck-delivery', color:'var(--accent3)', txt:'Entrega hierros — Centro Comercial', date:'15 may' },
+    { icon:'ti-file-invoice', color:'var(--purple)', txt:'Vence pago factura hormigonera', date:'18 may' },
+  ];
+  return items.map(i=>`
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)">
+      <i class="ti ${i.icon}" style="color:${i.color};font-size:16px;margin-top:1px;flex-shrink:0"></i>
+      <div style="flex:1;font-size:12px;line-height:1.4">${i.txt}</div>
+      <div style="font-size:11px;color:var(--text3);flex-shrink:0">${i.date}</div>
+    </div>
+  `).join('');
+}
+
+function updateBadges() {
+  document.getElementById('badge-obras').textContent = db.obras.filter(o=>o.estado==='ejecucion').length;
+  document.getElementById('badge-tareas').textContent = db.tareas.filter(t=>t.estado==='pendiente').length;
+}
+
+// ============================================================
+// OBRAS
+// ============================================================
+function obraCard(o) {
+  const ec = estadoClass(o.estado);
+  return `
+    <div class="obra-card ${ec}" onclick="showObra(${o.id})">
+      <div class="obra-header">
+        <div>
+          <div class="obra-name">${o.nombre}</div>
+          <div class="obra-client"><i class="ti ti-user" style="font-size:11px"></i>${o.cliente}</div>
+        </div>
+        <span class="badge ${ec}">${estadoLabel(o.estado)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${ec}" style="width:${o.avance}%"></div></div>
+      <div class="obra-footer">
+        <div class="obra-pct">${o.avance}% completado</div>
+        <div class="obra-date"><i class="ti ti-calendar" style="font-size:11px"></i>${fechaFmt(o.inicio)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderObras(filtro='todas') {
+  const list = filtro==='todas' ? db.obras : db.obras.filter(o=>o.estado===filtro);
+  document.getElementById('obras-list').innerHTML = list.length
+    ? list.map(o=>obraCard(o)).join('')
+    : '<div class="empty-state"><i class="ti ti-building-skyscraper"></i><p>Sin obras en esta categoría</p><button class="btn primary" onclick="openForm(\'obra\')"><i class="ti ti-plus"></i> Crear primera obra</button></div>';
+  // rebuild filter buttons for material view
+  const sel = document.getElementById('mat-obra-sel');
+  if(sel) {
+    sel.innerHTML = '<option value="">Todas las obras</option>' + db.obras.map(o=>`<option value="${o.id}">${o.nombre}</option>`).join('');
+  }
+}
+
+function filterObras(estado, btn) {
+  document.querySelectorAll('#view-obras .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderObras(estado);
+}
+
+// ============================================================
+// CLIENTES
+// ============================================================
+function renderClientes() {
+  document.getElementById('clientes-tbody').innerHTML = db.clientes.map(c=>{
+    const numObras = db.obras.filter(o=>o.cliente===c.nombre).length;
+    return `
+      <tr onclick="showCliente(${c.id})" style="cursor:pointer">
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:28px;height:28px;font-size:11px">${initials(c.nombre)}</div>
+          <span style="font-weight:500">${c.nombre}</span>
+        </div></td>
+        <td style="color:var(--text2)">${c.tel}</td>
+        <td style="color:var(--text2)">${c.email}</td>
+        <td><span class="badge ejecucion">${numObras} obra${numObras!==1?'s':''}</span></td>
+        <td><button class="btn" style="padding:4px 10px;font-size:11px" onclick="event.stopPropagation();showCliente(${c.id})"><i class="ti ti-eye"></i></button></td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">Sin clientes registrados</td></tr>';
+}
+
+// ============================================================
+// TAREAS
+// ============================================================
+function taskItem(t, full=true) {
+  const done = t.estado==='completada';
+  return `
+    <div class="task-item" id="task-${t.id}">
+      <div class="task-check ${done?'done':''}" onclick="toggleTarea(${t.id},this)">
+        ${done?'<i class="ti ti-check" style="font-size:10px;color:#fff"></i>':''}
+      </div>
+      <div class="prio ${t.prioridad}"></div>
+      <div style="flex:1">
+        <div class="task-title ${done?'done':''}">${t.titulo}</div>
+        ${full?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${obraNombre(t.obraId)}</div>`:''}
+      </div>
+      ${full?`<span class="badge ${t.prioridad}">${t.prioridad}</span>`:''}
+      <div class="task-meta"><i class="ti ti-calendar-event" style="font-size:12px"></i>${fechaFmt(t.vencimiento)}</div>
+      ${full?`<button class="btn danger" style="padding:4px 8px;font-size:11px" onclick="eliminarTarea(${t.id})"><i class="ti ti-trash"></i></button>`:''}
+    </div>
+  `;
+}
+
+function renderTareas(filtro='todas') {
+  let list = db.tareas;
+  if(filtro==='alta') list = list.filter(t=>t.prioridad==='alta');
+  else if(filtro==='pendiente') list = list.filter(t=>t.estado==='pendiente');
+  else if(filtro==='completada') list = list.filter(t=>t.estado==='completada');
+  document.getElementById('tareas-list').innerHTML = list.length
+    ? list.map(t=>taskItem(t,true)).join('')
+    : '<div class="empty-state"><i class="ti ti-check-square"></i><p>Sin tareas en esta categoría</p></div>';
+}
+
+function filterTareas(filtro, btn) {
+  document.querySelectorAll('#view-tareas .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTareas(filtro);
+}
+
+function toggleTarea(id, el) {
+  const t = db.tareas.find(x=>x.id===id);
+  if(!t) return;
+  t.estado = t.estado==='completada' ? 'pendiente' : 'completada';
+  saveData(); updateBadges();
+  el.classList.toggle('done', t.estado==='completada');
+  el.innerHTML = t.estado==='completada' ? '<i class="ti ti-check" style="font-size:10px;color:#fff"></i>' : '';
+  const titleEl = el.closest('.task-item').querySelector('.task-title');
+  if(titleEl) titleEl.classList.toggle('done', t.estado==='completada');
+}
+
+function eliminarTarea(id) {
+  if(!confirm('¿Eliminar esta tarea?')) return;
+  db.tareas = db.tareas.filter(t=>t.id!==id);
+  saveData(); renderTareas(); updateBadges();
+}
+
+// ============================================================
+// MATERIALES
+// ============================================================
+function renderMateriales() {
+  document.getElementById('materiales-tbody').innerHTML = db.materiales.map(m=>`
+    <tr>
+      <td style="font-weight:500">${m.nombre}</td>
+      <td style="font-family:var(--font);color:var(--accent3)">${m.cantidad}</td>
+      <td style="color:var(--text2)">${m.unidad}</td>
+      <td><span class="tag"><i class="ti ti-building" style="font-size:11px"></i>${obraNombre(m.obraId)}</span></td>
+      <td style="color:var(--text3);font-size:12px">${m.obs||'—'}</td>
+      <td><button class="btn danger" style="padding:4px 8px;font-size:11px" onclick="eliminarMaterial(${m.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:32px">Sin materiales registrados</td></tr>';
+}
+
+function eliminarMaterial(id) {
+  if(!confirm('¿Eliminar este material?')) return;
+  db.materiales = db.materiales.filter(m=>m.id!==id);
+  saveData(); renderMateriales();
+}
+
+function filterMateriales(v, btn) {
+  document.querySelectorAll('#view-materiales .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMateriales();
+}
+
+// ============================================================
+// DOCUMENTOS
+// ============================================================
+function renderDocumentos() {
+  document.getElementById('docs-list').innerHTML = db.documentos.map(d=>`
+    <div class="doc-item">
+      <div class="doc-icon ${d.tipo}">
+        <i class="ti ${d.tipo==='pdf'?'ti-file-type-pdf':d.tipo==='dwg'?'ti-vector':'ti-photo'}"></i>
+      </div>
+      <div style="flex:1">
+        <div class="doc-name">${d.nombre}</div>
+        <div class="doc-meta">${d.tamaño} · ${fechaFmt(d.fecha)} · ${obraNombre(d.obraId)}</div>
+      </div>
+      <button class="btn danger" style="padding:5px 8px" onclick="eliminarDoc(${d.id})"><i class="ti ti-trash"></i></button>
+    </div>
+  `).join('') || '<div class="empty-state"><i class="ti ti-files"></i><p>Sin documentos cargados</p></div>';
+}
+
+function eliminarDoc(id) {
+  if(!confirm('¿Eliminar este documento?')) return;
+  db.documentos = db.documentos.filter(d=>d.id!==id);
+  saveData(); renderDocumentos();
+}
+
+function subirArchivo(input) {
+  if(!input.files.length) return;
+  const f = input.files[0];
+  const ext = f.name.split('.').pop().toLowerCase();
+  const tipo = ext==='pdf'?'pdf':ext==='dwg'?'dwg':'img';
+  const kb = (f.size/1024).toFixed(0);
+  const tam = kb>1024 ? (kb/1024).toFixed(1)+' MB' : kb+' KB';
+  const hoy = new Date().toISOString().split('T')[0];
+  db.documentos.unshift({ id:db.nextId.documentos++, nombre:f.name, tipo, tamaño:tam, obraId:db.obras[0]?.id||0, fecha:hoy });
+  saveData(); renderDocumentos();
+  toast('Archivo cargado: ' + f.name);
+}
+
+// ============================================================
+// FOTOS
+// ============================================================
+const FOTO_COLORS = ['#1e3a5f','#1a3a2f','#3a1e1e','#2a1e3a','#1e2f3a','#3a2e1e','#1e3a3a'];
+
+function renderFotos() {
+  document.getElementById('fotos-grid').innerHTML = db.fotos.map(f=>`
+    <div class="gallery-item" style="background:${f.color}">
+      <div class="gallery-placeholder">
+        ${f.src?`<img src="${f.src}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:var(--radius)">`:''}
+        <i class="ti ti-photo" style="${f.src?'display:none':''}"></i>
+        <div style="font-size:11px;margin-top:2px">${obraNombre(f.obraId)}</div>
+        <div style="font-size:10px;color:var(--text3)">${fechaFmt(f.fecha)}</div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-photo"></i><p>Sin fotos cargadas</p></div>';
+}
+
+function subirFotos(input) {
+  const hoy = new Date().toISOString().split('T')[0];
+  Array.from(input.files).forEach((f,i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      db.fotos.unshift({ id:db.nextId.fotos++, nombre:f.name, obraId:db.obras[0]?.id||0, fecha:hoy, color:FOTO_COLORS[i%FOTO_COLORS.length], src:e.target.result });
+      saveData(); renderFotos();
+    };
+    reader.readAsDataURL(f);
+  });
+  toast(`${input.files.length} foto(s) cargadas`);
+}
+
+// ============================================================
+// CALENDARIO
+// ============================================================
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function cambiarMes(delta) {
+  calMonth += delta;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendario();
+}
+
+function renderCalendario() {
+  document.getElementById('cal-mes-label').textContent = `${MESES[calMonth]} ${calYear}`;
+  const primerDia = new Date(calYear, calMonth, 1).getDay();
+  const startOffset = (primerDia===0?6:primerDia-1);
+  const diasMes = new Date(calYear, calMonth+1, 0).getDate();
+  const hoy = new Date();
+  const eventDays = db.eventos
+    .filter(e => { const d=new Date(e.fecha); return d.getFullYear()===calYear && d.getMonth()===calMonth; })
+    .map(e => parseInt(e.fecha.split('-')[2]));
+
+  let html = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'].map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+  for(let i=0;i<startOffset;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=diasMes;d++) {
+    const isToday = d===hoy.getDate() && calMonth===hoy.getMonth() && calYear===hoy.getFullYear();
+    const hasEv = eventDays.includes(d);
+    html+=`<div class="cal-day ${isToday?'today':''} ${hasEv?'has-event':''}">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+
+  const eventosDelMes = db.eventos.filter(e=>{
+    const d=new Date(e.fecha);
+    return d.getFullYear()===calYear && d.getMonth()===calMonth;
+  });
+  document.getElementById('eventos-list').innerHTML = eventosDelMes.length
+    ? eventosDelMes.map(e=>`
+      <div class="task-item">
+        <div style="width:8px;height:8px;border-radius:50%;background:${e.color};flex-shrink:0"></div>
+        <div style="font-family:var(--font);font-size:11px;color:var(--text3);flex-shrink:0;width:60px">${fechaFmt(e.fecha)}</div>
+        <div class="task-title">${e.titulo}</div>
+        <span class="badge pendiente">${e.tipo}</span>
+        <button class="btn danger" style="padding:4px 8px;font-size:11px" onclick="eliminarEvento(${e.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    `).join('')
+    : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Sin eventos este mes</div>';
+}
+
+function eliminarEvento(id) {
+  db.eventos = db.eventos.filter(e=>e.id!==id);
+  saveData(); renderCalendario();
+}
+
+// ============================================================
+// DETAIL PANELS
+// ============================================================
+function showObra(id) {
+  const o = db.obras.find(x=>x.id===id);
+  if(!o) return;
+  const ec = estadoClass(o.estado);
+  const obraTareas = db.tareas.filter(t=>t.obraId===id);
+  const obraMats = db.materiales.filter(m=>m.obraId===id);
+  const obraDocs = db.documentos.filter(d=>d.obraId===id);
+  const obraFotos = db.fotos.filter(f=>f.obraId===id);
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div style="font-family:var(--font);font-size:15px;font-weight:600;margin-bottom:6px">${o.nombre}</div>
+        <span class="badge ${ec}">${estadoLabel(o.estado)}</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="editarObra(${o.id})" style="padding:6px 10px"><i class="ti ti-edit"></i></button>
+        <button class="btn" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:12px;color:var(--text3)">Avance total</div>
+        <div style="font-family:var(--font);font-size:22px;font-weight:600;color:var(--accent3)">${o.avance}%</div>
+      </div>
+      <div class="progress-bar" style="height:8px"><div class="progress-fill ${ec}" style="width:${o.avance}%"></div></div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <input type="range" class="avance-slider" min="0" max="100" value="${o.avance}" oninput="actualizarAvance(${o.id},this.value,this)">
+        <span style="font-size:11px;color:var(--text3);min-width:30px" id="avance-label-${o.id}">${o.avance}%</span>
+      </div>
+    </div>
+
+    <div class="detail-field"><div class="detail-field-label">Cliente</div><div class="detail-field-value">${o.cliente}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Dirección</div><div class="detail-field-value">${o.direccion}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Fecha de inicio</div><div class="detail-field-value">${fechaFmt(o.inicio)}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Notas</div><div class="detail-field-value" style="color:var(--text2);line-height:1.5">${o.notas||'Sin notas'}</div></div>
+
+    <hr class="divider">
+
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab(this,'dtab-tareas')">Tareas (${obraTareas.length})</div>
+      <div class="tab" onclick="switchTab(this,'dtab-mats')">Materiales (${obraMats.length})</div>
+      <div class="tab" onclick="switchTab(this,'dtab-docs')">Docs (${obraDocs.length})</div>
+      <div class="tab" onclick="switchTab(this,'dtab-fotos')">Fotos (${obraFotos.length})</div>
+    </div>
+
+    <div id="dtab-tareas">
+      <div class="task-list" style="margin-bottom:10px">
+        ${obraTareas.length ? obraTareas.map(t=>taskItem(t,false)).join('') : '<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center">Sin tareas</div>'}
+      </div>
+      <button class="btn" style="width:100%;justify-content:center" onclick="openFormConObra('tarea',${id})"><i class="ti ti-plus"></i> Agregar tarea</button>
+    </div>
+
+    <div id="dtab-mats" style="display:none">
+      ${obraMats.map(m=>`
+        <div class="mat-item">
+          <div class="mat-icon"><i class="ti ti-package"></i></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">${m.nombre}</div><div style="font-size:11px;color:var(--text3)">${m.cantidad} ${m.unidad}</div></div>
+        </div>
+      `).join('')||'<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center">Sin materiales</div>'}
+      <button class="btn" style="width:100%;justify-content:center;margin-top:10px" onclick="openFormConObra('material',${id})"><i class="ti ti-plus"></i> Registrar material</button>
+    </div>
+
+    <div id="dtab-docs" style="display:none">
+      ${obraDocs.map(d=>`
+        <div class="doc-item" style="margin-bottom:6px">
+          <div class="doc-icon ${d.tipo}"><i class="ti ${d.tipo==='pdf'?'ti-file-type-pdf':d.tipo==='dwg'?'ti-vector':'ti-photo'}"></i></div>
+          <div><div class="doc-name">${d.nombre}</div><div class="doc-meta">${d.tamaño}</div></div>
+        </div>
+      `).join('')||'<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center">Sin documentos</div>'}
+    </div>
+
+    <div id="dtab-fotos" style="display:none">
+      <div class="gallery-grid" style="grid-template-columns:repeat(3,1fr)">
+        ${obraFotos.map(f=>`
+          <div class="gallery-item" style="background:${f.color}">
+            ${f.src?`<img src="${f.src}" style="width:100%;height:100%;object-fit:cover">`:
+              `<div class="gallery-placeholder"><i class="ti ti-photo"></i></div>`}
+          </div>
+        `).join('')||'<div style="color:var(--text3);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Sin fotos</div>'}
+      </div>
+    </div>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function actualizarAvance(id, val, input) {
+  const o = db.obras.find(x=>x.id===id);
+  if(!o) return;
+  o.avance = parseInt(val);
+  document.getElementById('avance-label-'+id).textContent = val+'%';
+  // Update progress bar in detail
+  const bar = input.closest('[style*="background"]').querySelector('.progress-fill');
+  if(bar) bar.style.width = val+'%';
+  saveData();
+  // Debounce dashboard refresh
+  clearTimeout(window._avanceTimer);
+  window._avanceTimer = setTimeout(()=>renderDashboard(), 500);
+}
+
+function editarObra(id) {
+  closeDetail();
+  const o = db.obras.find(x=>x.id===id);
+  openForm('obra', o);
+}
+
+function showCliente(id) {
+  const c = db.clientes.find(x=>x.id===id);
+  if(!c) return;
+  const obrasCli = db.obras.filter(o=>o.cliente===c.nombre);
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="avatar" style="width:44px;height:44px;font-size:15px">${initials(c.nombre)}</div>
+        <div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:600">${c.nombre}</div>
+          <span class="badge ejecucion" style="margin-top:4px;display:inline-block">${obrasCli.length} obra${obrasCli.length!==1?'s':''}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="editarCliente(${c.id})" style="padding:6px 10px"><i class="ti ti-edit"></i></button>
+        <button class="btn" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div class="detail-field"><div class="detail-field-label">Teléfono</div><div class="detail-field-value">${c.tel}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Email</div><div class="detail-field-value">${c.email}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Dirección</div><div class="detail-field-value">${c.direccion}</div></div>
+    <div class="detail-field"><div class="detail-field-label">Notas</div><div class="detail-field-value" style="color:var(--text2)">${c.notas||'Sin notas'}</div></div>
+    <hr class="divider">
+    <div class="sec-title" style="margin-bottom:12px">obras asociadas</div>
+    ${obrasCli.length ? obrasCli.map(o=>`
+      <div class="obra-card ${estadoClass(o.estado)}" style="margin-bottom:8px" onclick="closeDetail();setTimeout(()=>showObra(${o.id}),100)">
+        <div class="obra-header">
+          <div class="obra-name">${o.nombre}</div>
+          <span class="badge ${estadoClass(o.estado)}">${o.avance}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill ${estadoClass(o.estado)}" style="width:${o.avance}%"></div></div>
+      </div>
+    `).join('') : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Sin obras asociadas</div>'}
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:8px" onclick="openFormConCliente(${c.id})"><i class="ti ti-plus"></i> Nueva obra para este cliente</button>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function editarCliente(id) {
+  closeDetail();
+  const c = db.clientes.find(x=>x.id===id);
+  openForm('cliente', c);
+}
+
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); }
+
+function switchTab(el, tabId) {
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['dtab-tareas','dtab-mats','dtab-docs','dtab-fotos'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=id===tabId?'block':'none';
+  });
+}
+
+// ============================================================
+// FORMS
+// ============================================================
+let editingId = null;
+
+function obraOptions(selectedId='') {
+  return db.obras.map(o=>`<option value="${o.id}" ${o.id==selectedId?'selected':''}>${o.nombre}</option>`).join('');
+}
+function clienteOptions(selectedNombre='') {
+  return db.clientes.map(c=>`<option ${c.nombre===selectedNombre?'selected':''}>${c.nombre}</option>`).join('');
+}
+
+const FORMS = {
+  obra: (data={}) => `
+    <div class="form-title"><i class="ti ti-building-skyscraper"></i> ${data.id?'Editar obra':'Nueva obra'}</div>
+    <div class="form-row"><label class="form-label">Nombre de la obra *</label><input class="form-input" id="f-nombre" placeholder="Ej: Residencia López" value="${data.nombre||''}"></div>
+    <div class="form-row"><label class="form-label">Cliente</label><select class="form-input" id="f-cliente">${clienteOptions(data.cliente)}</select></div>
+    <div class="form-row"><label class="form-label">Dirección</label><input class="form-input" id="f-dir" placeholder="Calle y número, ciudad" value="${data.direccion||''}"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label class="form-label">Fecha de inicio</label><input type="date" class="form-input" id="f-inicio" value="${data.inicio||''}"></div>
+      <div class="form-row"><label class="form-label">Estado</label><select class="form-input" id="f-estado"><option value="pendiente" ${data.estado==='pendiente'?'selected':''}>Pendiente</option><option value="ejecucion" ${data.estado==='ejecucion'?'selected':''}>En ejecución</option><option value="finalizada" ${data.estado==='finalizada'?'selected':''}>Finalizada</option></select></div>
+    </div>
+    <div class="form-row"><label class="form-label">Avance (%) — actual: <span id="f-avance-label">${data.avance||0}%</span></label><input type="range" class="avance-slider form-input" id="f-avance" min="0" max="100" value="${data.avance||0}" oninput="document.getElementById('f-avance-label').textContent=this.value+'%'" style="padding:4px 0;border:none;background:none"></div>
+    <div class="form-row"><label class="form-label">Notas generales</label><textarea class="form-input" id="f-notas" rows="3">${data.notas||''}</textarea></div>
+  `,
+  tarea: (data={}) => `
+    <div class="form-title"><i class="ti ti-check-square"></i> ${data.id?'Editar tarea':'Nueva tarea'}</div>
+    <div class="form-row"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descripción breve de la tarea" value="${data.titulo||''}"></div>
+    <div class="form-row"><label class="form-label">Obra relacionada</label><select class="form-input" id="f-obraId">${obraOptions(data.obraId)}</select></div>
+    <div class="form-grid2">
+      <div class="form-row"><label class="form-label">Prioridad</label><select class="form-input" id="f-prioridad"><option value="alta" ${data.prioridad==='alta'?'selected':''}>Alta</option><option value="media" ${data.prioridad==='media'?'selected':''}>Media</option><option value="baja" ${data.prioridad==='baja'?'selected':''}>Baja</option></select></div>
+      <div class="form-row"><label class="form-label">Fecha límite</label><input type="date" class="form-input" id="f-vencimiento" value="${data.vencimiento||''}"></div>
+    </div>
+    <div class="form-row"><label class="form-label">Descripción</label><textarea class="form-input" id="f-descripcion" rows="3">${data.descripcion||''}</textarea></div>
+  `,
+  cliente: (data={}) => `
+    <div class="form-title"><i class="ti ti-user-plus"></i> ${data.id?'Editar cliente':'Nuevo cliente'}</div>
+    <div class="form-row"><label class="form-label">Nombre / Empresa *</label><input class="form-input" id="f-nombre" placeholder="Nombre completo o razón social" value="${data.nombre||''}"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label class="form-label">Teléfono</label><input class="form-input" id="f-tel" placeholder="+54 351 000-0000" value="${data.tel||''}"></div>
+      <div class="form-row"><label class="form-label">Email</label><input type="email" class="form-input" id="f-email" placeholder="correo@ejemplo.com" value="${data.email||''}"></div>
+    </div>
+    <div class="form-row"><label class="form-label">Dirección</label><input class="form-input" id="f-dir" placeholder="Domicilio del cliente" value="${data.direccion||''}"></div>
+    <div class="form-row"><label class="form-label">Notas</label><textarea class="form-input" id="f-notas" rows="3">${data.notas||''}</textarea></div>
+  `,
+  material: (data={}) => `
+    <div class="form-title"><i class="ti ti-package"></i> ${data.id?'Editar material':'Registrar material'}</div>
+    <div class="form-row"><label class="form-label">Nombre del material *</label><input class="form-input" id="f-nombre" placeholder="Ej: Cemento Portland 50kg" value="${data.nombre||''}"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label class="form-label">Cantidad</label><input type="number" class="form-input" id="f-cantidad" placeholder="0" value="${data.cantidad||''}"></div>
+      <div class="form-row"><label class="form-label">Unidad</label><select class="form-input" id="f-unidad"><option ${data.unidad==='kg'?'selected':''}>kg</option><option ${data.unidad==='bolsas'?'selected':''}>bolsas</option><option ${data.unidad==='m³'?'selected':''}>m³</option><option ${data.unidad==='m²'?'selected':''}>m²</option><option ${data.unidad==='ml'?'selected':''}>ml</option><option ${data.unidad==='unid.'?'selected':''}>unid.</option><option ${data.unidad==='rollos'?'selected':''}>rollos</option></select></div>
+    </div>
+    <div class="form-row"><label class="form-label">Obra</label><select class="form-input" id="f-obraId">${obraOptions(data.obraId)}</select></div>
+    <div class="form-row"><label class="form-label">Observaciones</label><input class="form-input" id="f-obs" placeholder="Stock, proveedor, estado..." value="${data.obs||''}"></div>
+  `,
+  evento: (data={}) => `
+    <div class="form-title"><i class="ti ti-calendar-event"></i> Nuevo evento</div>
+    <div class="form-row"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descripción del evento" value="${data.titulo||''}"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label class="form-label">Tipo</label><select class="form-input" id="f-tipo"><option>Reunión</option><option>Entrega</option><option>Inspección</option><option>Certificado</option><option>Hito</option><option>Vencimiento</option></select></div>
+      <div class="form-row"><label class="form-label">Fecha</label><input type="date" class="form-input" id="f-fecha" value="${data.fecha||new Date().toISOString().split('T')[0]}"></div>
+    </div>
+  `,
+};
+
+function openForm(type, data={}) {
+  currentForm = type;
+  editingId = data.id || null;
+  document.getElementById('formContent').innerHTML = FORMS[type] ? FORMS[type](data) : '';
+  document.getElementById('formOverlay').classList.add('open');
+  // focus first input
+  setTimeout(()=>{ const fi = document.querySelector('#formContent .form-input'); if(fi) fi.focus(); },100);
+}
+
+function openFormConObra(type, obraId) {
+  closeDetail();
+  openForm(type, { obraId });
+}
+function openFormConCliente(clienteId) {
+  const c = db.clientes.find(x=>x.id===clienteId);
+  closeDetail();
+  openForm('obra', { cliente: c?.nombre||'' });
+}
+
+function closeForm() {
+  document.getElementById('formOverlay').classList.remove('open');
+  currentForm = null; editingId = null;
+}
+
+function saveForm() {
+  const g = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
+  const gi = id => parseInt(g(id))||0;
+
+  if(currentForm==='obra') {
+    const nombre = g('f-nombre');
+    if(!nombre) { alert('El nombre de la obra es obligatorio'); return; }
+    if(editingId) {
+      const o = db.obras.find(x=>x.id===editingId);
+      Object.assign(o, { nombre, cliente:g('f-cliente'), direccion:g('f-dir'), inicio:g('f-inicio'), estado:g('f-estado'), avance:gi('f-avance'), notas:g('f-notas') });
+    } else {
+      db.obras.push({ id:db.nextId.obras++, nombre, cliente:g('f-cliente'), direccion:g('f-dir'), inicio:g('f-inicio'), estado:g('f-estado'), avance:gi('f-avance'), notas:g('f-notas') });
+    }
+    saveData(); renderDashboard(); renderObras();
+    toast('Obra guardada: ' + nombre);
+
+  } else if(currentForm==='tarea') {
+    const titulo = g('f-titulo');
+    if(!titulo) { alert('El título es obligatorio'); return; }
+    if(editingId) {
+      const t = db.tareas.find(x=>x.id===editingId);
+      Object.assign(t, { titulo, obraId:gi('f-obraId'), prioridad:g('f-prioridad'), vencimiento:g('f-vencimiento'), descripcion:g('f-descripcion') });
+    } else {
+      db.tareas.push({ id:db.nextId.tareas++, titulo, obraId:gi('f-obraId'), prioridad:g('f-prioridad'), vencimiento:g('f-vencimiento'), estado:'pendiente', descripcion:g('f-descripcion') });
+    }
+    saveData(); renderDashboard(); renderTareas();
+    toast('Tarea guardada: ' + titulo);
+
+  } else if(currentForm==='cliente') {
+    const nombre = g('f-nombre');
+    if(!nombre) { alert('El nombre es obligatorio'); return; }
+    if(editingId) {
+      const c = db.clientes.find(x=>x.id===editingId);
+      Object.assign(c, { nombre, tel:g('f-tel'), email:g('f-email'), direccion:g('f-dir'), notas:g('f-notas') });
+    } else {
+      db.clientes.push({ id:db.nextId.clientes++, nombre, tel:g('f-tel'), email:g('f-email'), direccion:g('f-dir'), notas:g('f-notas') });
+    }
+    saveData(); renderClientes();
+    toast('Cliente guardado: ' + nombre);
+
+  } else if(currentForm==='material') {
+    const nombre = g('f-nombre');
+    if(!nombre) { alert('El nombre es obligatorio'); return; }
+    db.materiales.push({ id:db.nextId.materiales++, nombre, cantidad:gi('f-cantidad'), unidad:g('f-unidad'), obraId:gi('f-obraId'), obs:g('f-obs') });
+    saveData(); renderMateriales();
+    toast('Material registrado: ' + nombre);
+
+  } else if(currentForm==='evento') {
+    const titulo = g('f-titulo');
+    if(!titulo) { alert('El título es obligatorio'); return; }
+    const COLORES = { Reunión:'var(--accent)', Entrega:'var(--amber)', Inspección:'var(--red)', Certificado:'var(--green)', Hito:'var(--accent3)', Vencimiento:'var(--purple)' };
+    const tipo = g('f-tipo');
+    db.eventos.push({ id:db.nextId.eventos++, titulo, tipo, fecha:g('f-fecha'), color:COLORES[tipo]||'var(--accent)' });
+    saveData(); renderCalendario();
+    toast('Evento creado: ' + titulo);
+  }
+
+  closeForm();
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+function handleSearch(q) {
+  const sr = document.getElementById('searchResults');
+  if(!q || q.length<2) { sr.classList.remove('open'); return; }
+  const ql = q.toLowerCase();
+  const results = [
+    ...db.obras.filter(o=>o.nombre.toLowerCase().includes(ql)||o.cliente.toLowerCase().includes(ql)).map(o=>({ tipo:'Obra', icono:'ti-building-skyscraper', label:o.nombre, sub:o.cliente, action:`nav('obras',document.querySelectorAll('.nav-item')[1]);setTimeout(()=>showObra(${o.id}),100)` })),
+    ...db.clientes.filter(c=>c.nombre.toLowerCase().includes(ql)||c.email.toLowerCase().includes(ql)).map(c=>({ tipo:'Cliente', icono:'ti-user', label:c.nombre, sub:c.email, action:`nav('clientes',document.querySelectorAll('.nav-item')[2]);setTimeout(()=>showCliente(${c.id}),100)` })),
+    ...db.tareas.filter(t=>t.titulo.toLowerCase().includes(ql)).map(t=>({ tipo:'Tarea', icono:'ti-check-square', label:t.titulo, sub:obraNombre(t.obraId), action:`nav('tareas',document.querySelectorAll('.nav-item')[3])` })),
+  ].slice(0,6);
+
+  if(!results.length) { sr.innerHTML='<div class="search-result-item" style="color:var(--text3)"><i class="ti ti-search"></i>Sin resultados</div>'; sr.classList.add('open'); return; }
+  sr.innerHTML = results.map(r=>`
+    <div class="search-result-item" onclick="${r.action};document.getElementById('globalSearch').value='';document.getElementById('searchResults').classList.remove('open')">
+      <i class="ti ${r.icono}" style="color:var(--accent3);font-size:15px"></i>
+      <div>
+        <div style="font-size:12px;font-weight:500">${r.label}</div>
+        <div style="font-size:11px;color:var(--text3)">${r.tipo} · ${r.sub}</div>
+      </div>
+    </div>
+  `).join('');
+  sr.classList.add('open');
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.search-box')) document.getElementById('searchResults').classList.remove('open');
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<i class="ti ti-check-circle" style="color:var(--green);font-size:18px"></i> ${msg}`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(),400); }, 2500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  renderDashboard();
+  const hoy = new Date();
+  calYear = hoy.getFullYear();
+  calMonth = hoy.getMonth();
+
+  // Registrar Service Worker para modo offline (PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+});
+</script>
+</body>
+</html>
